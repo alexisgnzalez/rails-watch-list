@@ -1,30 +1,37 @@
 class BookmarksController < ApplicationController
+  before_action :set_bookmark, only: :destroy
+  before_action :set_list, only: %i[new create]
+
   def new
-    # /lists/:list_id/bookmark/new
     @bookmark = Bookmark.new
-    @list = List.find(params[:list_id])
   end
 
   def create
-    @list = List.find(params[:list_id])
     @bookmark = Bookmark.new(bookmark_params)
     @bookmark.list = @list
-    @bookmark.save
-    # no need for app/views/bookmarks/create.html.erb
-    redirect_to lists_path
+    if @bookmark.save
+      redirect_to list_path(@list)
+    else
+      render :new
+    end
   end
 
   def destroy
-    @bookmark = bookmark.find(params[:id])
     @bookmark.destroy
-
-    # no need for app/views/bookmarks/destroy.html.erb
-    redirect_to lists_path
+    redirect_to lists_path(@bookmark.list)
   end
 
   private
 
   def bookmark_params
     params.require(:bookmark).permit(:comment, :movie_id)
+  end
+
+  def set_bookmark
+    @bookmark = Bookmark.find(params[:id])
+  end
+
+  def set_list
+    @list = List.find(params[:list_id])
   end
 end
